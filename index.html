@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Auditoría de la Relación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: sala de tribunal. Fondo de madera oscura, estrado arriba, y cada foja como un pergamino sobre el banco. Look único y deliberado. */
+:root{
+  --wood:#2B1810;      /* caoba */
+  --wood2:#3A2216;
+  --parch:#F3EAD6;     /* pergamino */
+  --ink:#24140D;
+  --soft:#6E5545;
+  --wine:#7A1426;      /* bordó de toga */
+  --brass:#C9A24A;     /* bronce del estrado */
+  --green:#2E6B47;
+  --display:"Cinzel", "Trajan Pro", Georgia, serif;
+  --body:"Crimson Pro", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+html,body{min-height:100%}
+body{
+  background:var(--wood); color:var(--parch); font-family:var(--body); font-size:18px; line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:20px 48px;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 64px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, var(--wood2), var(--wood));
+}
+.wrap{max-width:470px; margin:0 auto; display:flex; flex-direction:column; gap:18px}
+.bench{text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px; padding-bottom:14px; border-bottom:3px double var(--brass)}
+.bench .scales{font-size:34px; line-height:1}
+.bench h1{font-family:var(--display); font-weight:800; font-size:clamp(1.05rem, 5vw, 1.3rem); letter-spacing:.16em; color:var(--brass); margin:0; text-wrap:balance}
+.bench span{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#B89D86}
+.progress{display:flex; gap:6px; justify-content:center}
+.progress i{width:20px; height:5px; border-radius:3px; background:rgba(201,162,74,.25)}
+.progress i.on{background:var(--brass)}
+.panel{position:relative; background:var(--parch); color:var(--ink); border-radius:4px; padding:30px 22px 24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 0 0 1px var(--brass), 0 0 0 6px var(--parch), 0 0 0 7px var(--brass), 0 18px 40px rgba(0,0,0,.55); margin:7px; animation:in .4s ease}
+.panel::before{content:attr(data-tab); position:absolute; top:-15px; left:50%; transform:translateX(-50%); white-space:nowrap; background:var(--wine); color:var(--parch); font:600 10.5px var(--mono); letter-spacing:.12em; padding:6px 14px; border:1px solid var(--brass)}
+@keyframes in{from{transform:translateY(12px); opacity:.2}to{transform:none; opacity:1}}
+h2{font-family:var(--display); font-weight:800; font-size:1.45rem; line-height:1.15; margin:0; text-align:center; text-wrap:balance; letter-spacing:.02em}
+h2 em{font-style:normal; color:var(--wine)}
+p{margin:0}
+.lead{font-size:1.1rem}
+.muted{color:var(--soft); font-style:italic}
+.label{font-family:var(--mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--soft)}
+.rule{height:1px; background:linear-gradient(90deg, transparent, var(--brass), transparent); border:0; margin:2px 0}
+.facts{display:flex; flex-direction:column; gap:12px}
+.facts p{display:flex; flex-direction:column; gap:2px}
+.def{border-left:3px solid var(--wine); padding:4px 0 4px 14px; font-style:italic}
+.btn{appearance:none; border:1px solid var(--brass); background:var(--wine); color:var(--parch); font:600 .95rem var(--display); letter-spacing:.08em; padding:14px 18px; border-radius:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; text-decoration:none; transition:transform .1s, box-shadow .15s; box-shadow:0 3px 0 #4A0B17}
+.btn:hover{box-shadow:0 3px 0 #4A0B17, 0 0 0 3px rgba(201,162,74,.35)}
+.btn:active{transform:translateY(2px); box-shadow:0 1px 0 #4A0B17}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--brass); outline-offset:2px}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--ink); box-shadow:none}
+.btn.green{background:var(--green); box-shadow:0 3px 0 #1B4229}
+.btn[disabled]{opacity:.45; cursor:not-allowed}
+.verdict{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.opts{display:flex; flex-direction:column; gap:8px}
+.opt{appearance:none; text-align:left; border:1px solid var(--soft); background:transparent; color:var(--ink); border-radius:3px; padding:12px 14px; font:400 1.02rem var(--body); cursor:pointer}
+.opt:hover{background:rgba(122,20,38,.06)}
+.opt[aria-pressed="true"]{background:var(--wine); color:var(--parch); border-color:var(--wine)}
+input[type=text]{width:100%; box-sizing:border-box; border:0; border-bottom:2px solid var(--ink); padding:10px 2px; font:italic 400 1.05rem var(--body); color:var(--ink); background:transparent}
+.stamp{align-self:center; font-family:var(--display); font-weight:800; font-size:1.8rem; letter-spacing:.1em; text-transform:uppercase; padding:4px 18px; border:4px double currentColor; transform:rotate(-7deg); animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+.stamp.g{color:var(--wine)} .stamp.i{color:var(--green)}
+@keyframes stamp{from{transform:rotate(-7deg) scale(2.4); opacity:0}to{transform:rotate(-7deg) scale(1); opacity:1}}
+.gavel{position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:20}
+.gavel div{font-size:110px; transform-origin:80% 80%; animation:bang .6s ease-in forwards}
+.gavel p{position:absolute; bottom:28%; font-family:var(--display); font-weight:800; color:var(--brass); letter-spacing:.14em; text-shadow:0 2px 10px #000; animation:fade .9s forwards}
+@keyframes bang{0%{transform:rotate(-55deg); opacity:0}45%{transform:rotate(12deg); opacity:1}60%{transform:rotate(0)}100%{opacity:0}}
+@keyframes fade{0%,60%{opacity:1}100%{opacity:0}}
+.letter{font-size:1.12rem; line-height:1.6; display:flex; flex-direction:column; gap:12px}
+.sign{font-family:var(--display); color:var(--wine); text-align:right}
+.sent{display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none}
+.sent li{display:flex; flex-direction:column; gap:2px; padding-bottom:12px; border-bottom:1px dashed var(--soft)}
+.sent .tag{font:600 .68rem var(--mono); letter-spacing:.1em; text-transform:uppercase}
+.sent .tag.g{color:var(--wine)} .sent .tag.i{color:var(--green)}
+.seal{align-self:center; width:124px; height:124px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #E7C56C, var(--brass) 60%, #9C7A2D); color:var(--ink); display:grid; place-items:center; text-align:center; font:600 .62rem var(--mono); letter-spacing:.1em; text-transform:uppercase; transform:rotate(-6deg); box-shadow:inset 0 0 0 5px rgba(255,255,255,.25), inset 0 0 0 7px var(--ink), 0 4px 10px rgba(0,0,0,.3)}
+.seal b{display:block; font:800 1rem var(--display); letter-spacing:.06em; margin:2px 0}
+.foot{text-align:center; font-family:var(--mono); font-size:.68rem; letter-spacing:.06em; color:#A98E79}
+.hearts{position:fixed; inset:0; pointer-events:none; overflow:hidden}
+.hearts i{position:absolute; bottom:-30px; font-style:normal; font-size:22px; animation:up 3s ease-in forwards}
+@keyframes up{to{transform:translateY(-110vh) rotate(25deg); opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts" aria-hidden="true"></div>
+<div class="gavel" id="gavel" hidden aria-hidden="true"><div>🔨</div><p>¡ORDEN EN LA SALA!</p></div>
+<div class="wrap">
+  <header class="bench">
+    <div class="scales" aria-hidden="true">⚖️</div>
+    <h1>Auditoría Oficial de la Relación</h1>
+    <span>Expediente N.º 0511 · Control mensual</span>
+    <div class="progress" id="prog"></div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <p class="foot">Se ruega no apelar con mala cara · Las sentencias no prescriben</p>
+</div>
+
+<script>
+/* ============ TEXTOS EDITABLES ============ */
+const NOMBRE = "Paloma";
+const NOVIO = "Fausto";
+// Tu número de WhatsApp con código de país, sin + ni espacios. Ej.: "5491122334455"
+const WHATSAPP = "5491161587146";
+
+const CASOS = [
+  {
+    titulo: "El caso «Resolutivo»",
+    hechos: [
+      ["Hechos", `La damnificada le dijo al acusado que «no es un hombre resolutivo».`],
+      ["Reacción del acusado", `Se ofendió y respondió: «¿qué es esa boludez?». Así, sin más.`],
+    ],
+    defensa: `La defensa hace notar que el acusado montó un tribunal entero, con expedientes y todo, para resolver esta situación. Solicita que se tome como prueba de que es, efectivamente, muy resolutivo.`,
+    condenas: [
+      "Organizar solo la próxima salida, de principio a fin, sin preguntar nada",
+      "Decir «tenés razón, mi amor» sin agregar nada después",
+    ],
+  },
+  {
+    titulo: "El caso «Viaje en nuestro día»",
+    hechos: [
+      ["Hechos", `El acusado anunció que se iba de viaje justo el día que cumplían mes.`],
+      ["Reacción de la damnificada", `Se enojó. El tribunal considera el enojo razonable.`],
+    ],
+    defensa: `La defensa admite que la fecha fue poco feliz. Como atenuante, presenta esta causa como regalo a distancia y jura que el festejo queda pendiente, no cancelado.`,
+    condenas: [
+      "Festejo doble apenas vuelva",
+      "Traer un regalo y flores",
+    ],
+  },
+  {
+    titulo: "El caso «Cada vez que nos vemos»",
+    hechos: [
+      ["Hechos", `Últimamente, cada vez que se ven, terminan peleando.`],
+      ["Antecedentes", `Antes no eran así. El tribunal tiene registros de una pareja que se la pasaba bien.`],
+    ],
+    defensa: `El acusado reconoce su parte y declara que extraña cómo eran antes. Se compromete a poner de su lado para volver a eso.`,
+    condenas: [
+      "Próxima juntada: prohibido pelear, solo planes lindos",
+      "Un abrazo largo antes de cualquier discusión",
+      "Cita sorpresa organizada por él",
+    ],
+  },
+];
+
+const ALEGATO = [
+  `Señora jueza, ${NOMBRE}:`,
+  "Ya sé que últimamente cada vez que nos vemos terminamos peleando, y nosotros no éramos así. No me gusta que estemos así, y te pido perdón por mi parte.",
+  "Extraño cómo éramos, y quiero que volvamos a eso. Me da bronca no estar ahí justo hoy, por eso quise dejarte esto para que te rías un rato y sepas que estoy pensando en vos.",
+  "Feliz mes. Acepto la condena que me pongas.",
+];
+/* ========================================= */
+
+const app = document.getElementById("app");
+const prog = document.getElementById("prog");
+const fallos = [];
+let perdonado = false;
+const total = CASOS.length + 3;
+const $ = id => document.getElementById(id);
+
+function setProg(n){ prog.innerHTML = Array.from({length:total},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join(""); }
+function view(tab, html, after){ app.innerHTML = `<section class="panel" data-tab="${tab}">${html}</section>`; window.scrollTo({top:0, behavior:"smooth"}); after && after(); }
+function hearts(n=14){ const box=$("hearts"); for(let i=0;i<n;i++){ const h=document.createElement("i"); h.textContent=["❤","💗","⚖️"][i%3]; h.style.left=Math.random()*100+"vw"; h.style.animationDelay=Math.random()*.8+"s"; box.appendChild(h); setTimeout(()=>h.remove(),4000);} }
+function martillo(then){
+  const g=$("gavel"); g.hidden=false;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches){ g.hidden=true; return then(); }
+  const d=g.querySelector("div"), p=g.querySelector("p"); d.style.animation="none"; p.style.animation="none"; void d.offsetWidth; d.style.animation=""; p.style.animation="";
+  try{ navigator.vibrate && navigator.vibrate(60); }catch(e){}
+  setTimeout(()=>{ g.hidden=true; then(); }, 850);
+}
+
+function intro(){
+  fallos.length = 0; perdonado = false; setProg(0);
+  view("TODOS DE PIE", `
+    <h2>Buen día, <em>${NOMBRE}</em>.</h2>
+    <hr class="rule">
+    <p class="lead">Entendemos que hoy cumplís mes con tu novio. Antes de renovar la relación por un mes más, debemos realizar una <b>auditoría completa</b>.</p>
+    <p>Usted ha sido designada <b>auditora y jueza</b>. Revisará cada hallazgo de la auditoría, decidirá si el acusado es culpable o inocente y, en caso de culpa, dictará la condena.</p>
+    <p class="muted">Acusado: ${NOVIO}. Situación actual: de viaje, pero arrepentido.</p>
+    <button class="btn" id="go">⚖️ Asumir el cargo</button>`,
+    () => $("go").onclick = () => martillo(() => caso(0)));
+}
+
+function caso(i){
+  const c = CASOS[i]; setProg(i+1);
+  view(`HALLAZGO ${i+1} DE ${CASOS.length}`, `
+    <h2>${c.titulo}</h2>
+    <hr class="rule">
+    <div class="facts">${c.hechos.map(h=>`<p><span class="label">${h[0]}</span>${h[1]}</p>`).join("")}</div>
+    <p><span class="label">Alegato de la defensa</span></p>
+    <p class="def">${c.defensa}</p>
+    <hr class="rule">
+    <p style="text-align:center"><b>¿Cómo encuentra al acusado, señora jueza?</b></p>
+    <div class="verdict">
+      <button class="btn" id="cul">Culpable</button>
+      <button class="btn ghost" id="ino">Inocente</button>
+    </div>`,
+    () => { $("cul").onclick = () => martillo(() => condena(i)); $("ino").onclick = () => martillo(() => inocente(i)); });
+}
+
+function inocente(i){
+  fallos[i] = { culpable:false };
+  view(`HALLAZGO ${i+1} · FALLO`, `
+    <span class="stamp i">Inocente</span>
+    <h2>El acusado queda <em>absuelto</em>.</h2>
+    <p class="muted" style="text-align:center">La defensa no lo puede creer. El acusado le manda un beso a la jueza más justa del país.</p>
+    <button class="btn" id="next">Siguiente hallazgo</button>`,
+    () => { hearts(6); $("next").onclick = siguiente(i); });
+}
+
+function condena(i){
+  const c = CASOS[i];
+  view(`HALLAZGO ${i+1} · CONDENA`, `
+    <span class="stamp g">Culpable</span>
+    <h2>Dicte la <em>condena</em>.</h2>
+    <p class="muted" style="text-align:center">Elija una pena o redacte la suya. Se cumplirá al regreso del acusado.</p>
+    <div class="opts">${c.condenas.map((t,k)=>`<button class="opt" data-k="${k}" aria-pressed="false">${t}</button>`).join("")}</div>
+    <label class="label" for="otra">✍️ O elija su propia condena</label>
+    <input type="text" id="otra" placeholder="Ej.: llevarme a comer helado" maxlength="120">
+    <button class="btn" id="dictar" disabled>Dictar sentencia</button>`,
+    () => {
+      let sel = null;
+      const upd = () => { $("dictar").disabled = !(sel || $("otra").value.trim()); };
+      app.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+        app.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed","false"));
+        b.setAttribute("aria-pressed","true"); sel = c.condenas[b.dataset.k]; $("otra").value = ""; upd();
+      });
+      $("otra").oninput = () => { app.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed","false")); sel = null; upd(); };
+      $("dictar").onclick = () => { fallos[i] = { culpable:true, pena: $("otra").value.trim() || sel }; martillo(siguiente(i)); };
+    });
+}
+
+const siguiente = i => () => (i+1 < CASOS.length ? caso(i+1) : alegato());
+
+function alegato(){
+  setProg(CASOS.length+1);
+  view("ALEGATO FINAL DEL ACUSADO", `
+    <div class="letter">${ALEGATO.map(l=>`<p>${l}</p>`).join("")}<p class="sign">— ${NOVIO} 💗</p></div>
+    <button class="btn" id="dict">Pasar a la decisión final</button>`,
+    () => { hearts(); $("dict").onclick = decision; });
+}
+
+function decision(){
+  setProg(CASOS.length+2);
+  view("DECISIÓN FINAL", `
+    <h2>Última pregunta, <em>señora jueza</em>.</h2>
+    <p style="text-align:center">Habiendo revisado todos los hallazgos y escuchado al acusado, ¿el tribunal lo perdona?</p>
+    <div class="verdict">
+      <button class="btn green" id="si">Sí, lo perdono</button>
+      <button class="btn ghost" id="no">No</button>
+    </div>
+    <p class="muted" id="nomsg" style="text-align:center" hidden></p>`,
+    () => {
+      const frases = ["¿Segura? El acusado está de viaje, solo y triste 🥺","El tribunal le pide a la jueza que lo reconsidere.","El botón «No» se encuentra fuera de servicio por mantenimiento."];
+      let n = 0;
+      $("no").onclick = () => {
+        const m = $("nomsg"); m.hidden = false; m.textContent = frases[Math.min(n, frases.length-1)]; n++;
+        const b = $("no"); b.style.transform = `scale(${Math.max(.4, 1 - n*.2)})`;
+        if (n >= frases.length) b.disabled = true;
+      };
+      $("si").onclick = () => { perdonado = true; martillo(sentencia); };
+    });
+}
+
+function mensajeWpp(){
+  const lineas = [
+    "⚖️ *INFORME DE AUDITORÍA DE LA RELACIÓN*",
+    `Auditora y jueza: ${NOMBRE}`,
+    `Acusado: ${NOVIO}`,
+    "",
+    ...CASOS.map((c,i)=>{ const f=fallos[i]||{}; return f.culpable ? `🔴 ${c.titulo}: CULPABLE\n   Condena: ${f.pena}` : `🟢 ${c.titulo}: INOCENTE`; }),
+    "",
+    perdonado ? "Decisión final: PERDONADO 💗" : "Decisión final: pendiente",
+    "La relación queda renovada por un mes más. Se levanta la sesión 🔨",
+  ];
+  return lineas.join("\n");
+}
+
+function sentencia(){
+  setProg(total);
+  const culpas = fallos.filter(f=>f && f.culpable).length;
+  const texto = mensajeWpp();
+  const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
+  view("INFORME DE AUDITORÍA", `
+    <div class="seal"><span>Relación<b>Auditada</b>y renovada</span></div>
+    <h2>Se renueva la relación por <em>un mes más</em>.</h2>
+    <p style="text-align:center">Resultado: ${culpas} ${culpas===1?"cargo":"cargos"} con condena, ${CASOS.length-culpas} ${CASOS.length-culpas===1?"absolución":"absoluciones"} y un perdón general.</p>
+    <hr class="rule">
+    <ul class="sent">${CASOS.map((c,i)=>{ const f=fallos[i]||{}; return `<li><span class="tag ${f.culpable?"g":"i"}">${f.culpable?"Culpable":"Inocente"} · ${c.titulo}</span><span>${f.culpable?"Condena: "+f.pena:"Sin condena. Igual le debe un beso."}</span></li>`; }).join("")}</ul>
+    <a class="btn green" href="${url}" target="_blank" rel="noopener">📲 Notificar la sentencia a ${NOVIO} por WhatsApp</a>
+    <button class="btn ghost" id="copy">Copiar sentencia</button>
+    <p class="muted" id="cmsg" style="text-align:center">Las condenas se cumplen a su regreso. Feliz mes. Se levanta la sesión.</p>
+    <button class="btn ghost" id="re">↩ Volver a juzgar</button>`,
+    () => {
+      hearts(24);
+      $("re").onclick = intro;
+      $("copy").onclick = () => {
+        navigator.clipboard.writeText(texto)
+          .then(()=>{ $("cmsg").textContent = "Sentencia copiada. Pegala en el chat con " + NOVIO + "."; })
+          .catch(()=>{ $("cmsg").textContent = "No se pudo copiar. Usá el botón de WhatsApp o sacale captura."; });
+      };
+    });
+}
+
+intro();
+</script>
+</body>
+</html>
